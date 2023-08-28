@@ -1,0 +1,131 @@
+version: '3'
+services:
+  nginx:
+    image: nginx
+    container_name: nginx
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/html:/usr/share/nginx/html
+      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - 6379:6379
+    command: --requirepass zhx199503
+    volumes:
+      - ./redis/data:/data
+  mysql:
+    image: mysql
+    container_name: mysql
+    ports:
+      - 3306:3306
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: zhx199503
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+  postgresql:
+    image: postgres
+    container_name: postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=zhx199503
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+  adminer:
+    image: adminer
+    container_name: adminer
+    ports:
+      - 8080:8080
+  mongo:
+    image: mongo
+    container_name: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: zhx199503
+    ports:
+      - 27018:27017
+    volumes:
+      - ./mongo/configdb:/data/configdb
+      - ./mongo/data:/data/db
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: zhx199503
+      ME_CONFIG_MONGODB_URL: mongodb://root:zhx199503@mongo:27017/
+  redis-stack:
+    image: redis/redis-stack-server
+    container_name: redis-stack
+    ports:
+      - 6380:6379
+      - 8001:8001
+    environment:
+      - REDIS_ARGS=--requirepass zhx199503
+    volumes:
+      - ./redis-stack/data:/data
+  elasticsearch:
+    image: elasticsearch:8.8.1
+    container_name: elasticsearch
+    ports:
+      - 9200:9200
+    environment:
+      - ELASTIC_PASSWORD=zhx199503
+  alpine:
+    image: alpine
+    container_name: alpine
+    tty: true
+    command: /bin/sh
+  centos:
+    image: centos
+    container_name: centos
+    tty: true
+    command: /bin/bash
+  ubuntu:
+    image: ubuntu
+    container_name: ubuntu
+    tty: true
+    command: /bin/bash
+  tomcat:
+    image: tomcat
+    container_name: tomcat
+    ports:
+      - 8085:8080
+    volumes:
+      - ./tomcat/data:/usr/local/tomcat/webapps
+  rocketmq-nameserver:
+    image: candice0630/rocketmq:5.0.0-alpine
+    container_name: rocketmq-nameserver
+    ports:
+      - 9876:9876
+    command: sh mqnamesrv
+  rcoketmq-broker:
+    image: candice0630/rocketmq:5.0.0-alpine
+    container_name: rcoketmq-broker
+    ports:
+      - 10909:10909
+      - 10911:10911
+      - 10912:10912
+    volumes:
+     - ./rocketmq/conf/broker.conf:/home/rocketmq/rocketmq-5.0.0/conf/broker.conf
+    command: sh mqbroker -n rocketmq-nameserver:9876 -c /home/rocketmq/rocketmq-5.0.0/conf/broker.conf
+    depends_on:
+      - rocketmq-nameserver
+  rocketmq-console:
+    image: candice0630/rocketmq-console-ng:2.0
+    container_name: rocketmq-console
+    ports:
+      - 19876:8080
+    environment:
+      JAVA_OPTS: -Drocketmq.config.namesrvAddr=rocketmq-nameserver:9876 -Drocketmq.config.isVIPChannel=false
+    volumes:
+      - ./rocketmq/tmp:/tmp
+    depends_on:
+      - rocketmq-nameserver

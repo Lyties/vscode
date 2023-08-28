@@ -1,1 +1,6 @@
 venv
+applications/mongo/data
+applications/mysql/data
+applications/postgres/data
+applications/rocketmq/tmp
+applications/**/.DS_Store
