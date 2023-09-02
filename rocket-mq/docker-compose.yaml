@@ -1,0 +1,18 @@
+version: '3'
+services:
+  rocket-mq:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rocket-mq
+    tty: true
+    environment:
+      - BROKER_IP=192.168.2.194
+      - rocketmq.namesrv.addr=127.0.0.1:9876
+    ports:
+      - 8085:8085
+      - 10909:10909
+      - 10911:10911
+      - 10912:10912
+      - 9876:9876
+    
